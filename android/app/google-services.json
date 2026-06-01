@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "985588036453",
+    "project_id": "cowboy-duel-doonghwi",
+    "storage_bucket": "cowboy-duel-doonghwi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985588036453:android:68e95b0cfef4fb4e14e78c",
+        "android_client_info": {
+          "package_name": "com.doonghwi.cowboy_duel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEjIKtwjRNbTGy3SlenQBJ6kw1LqxfvV8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

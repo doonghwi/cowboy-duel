@@ -37,6 +37,8 @@ dependencies:
 
   # Western display fonts (Rye / Special Elite) for the wanted-poster look.
   google_fonts: ^6.2.1
+  firebase_core: ^4.10.0
+  firebase_database: ^12.4.2
 
 dev_dependencies:
   flutter_test:

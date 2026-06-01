@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../game/cpu_ai.dart';
+import '../main.dart' show firebaseReady;
 import '../theme.dart';
 import '../widgets/desert_background.dart';
 import 'game_screen.dart';
 import 'how_to_play_screen.dart';
+import 'online_lobby_screen.dart';
 
 const _cream = Color(0xFFFFF4DD);
 
@@ -84,6 +86,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         ));
                       },
                     ),
+                    if (firebaseReady) ...[
+                      const SizedBox(height: 14),
+                      _BigButton(
+                        label: '온라인 대전',
+                        icon: '🌐',
+                        color: CD.sage,
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => const OnlineLobbyScreen(),
+                          ));
+                        },
+                      ),
+                    ],
                     const SizedBox(height: 14),
                     _BigButton(
                       label: '게임 방법',
