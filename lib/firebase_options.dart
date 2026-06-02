@@ -55,6 +55,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '985588036453',
     projectId: 'cowboy-duel-doonghwi',
     authDomain: 'cowboy-duel-doonghwi.firebaseapp.com',
+    databaseURL: 'https://cowboy-duel-doonghwi-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'cowboy-duel-doonghwi.firebasestorage.app',
   );
 
@@ -63,6 +64,8 @@ class DefaultFirebaseOptions {
     appId: '1:985588036453:android:68e95b0cfef4fb4e14e78c',
     messagingSenderId: '985588036453',
     projectId: 'cowboy-duel-doonghwi',
+    databaseURL: 'https://cowboy-duel-doonghwi-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'cowboy-duel-doonghwi.firebasestorage.app',
   );
+
 }
