@@ -25,6 +25,9 @@ class RoomView {
   final int oppAmmo;
   final CowboyAction? myLastAction;
   final CowboyAction? oppLastAction;
+
+  /// What I already locked in for the current (pending) turn, if anything.
+  final CowboyAction? myPendingAction;
   final bool iSubmitted;
   final bool iTappedStandoff;
   final bool? iWon; // non-null only when phase == over
@@ -38,6 +41,7 @@ class RoomView {
     required this.oppAmmo,
     required this.myLastAction,
     required this.oppLastAction,
+    required this.myPendingAction,
     required this.iSubmitted,
     required this.iTappedStandoff,
     required this.iWon,
@@ -92,12 +96,17 @@ class OnlineService {
 
   Stream<DatabaseEvent> watch(String code) => room(code).onValue;
 
+  // Turn keys are prefixed with 't' (t0, t1, ...) on purpose: Firebase RTDB
+  // converts a node whose keys are sequential integers ("0","1",...) into a
+  // List, which would break Map-based parsing. A string prefix keeps it a Map.
   Future<void> submitMove(String code, int turn, Slot slot, CowboyAction a) {
-    return room(code).child('turns/$turn/${slot.key}').set(a.index);
+    return room(code).child('turns/t$turn/${slot.key}').set(a.index);
   }
 
   Future<void> tapStandoff(String code, int turn, Slot slot) {
-    return room(code).child('turns/$turn/st_${slot.key}').set(ServerValue.timestamp);
+    return room(code)
+        .child('turns/t$turn/st_${slot.key}')
+        .set(ServerValue.timestamp);
   }
 
   Future<void> requestRematch(String code, Slot slot) {
@@ -110,7 +119,6 @@ class OnlineService {
   }
 
   Future<void> leave(String code, Slot slot) async {
-    // Drop our slot; if the room empties it will be cleaned up lazily.
     await room(code).child(slot.key).remove();
   }
 
@@ -118,26 +126,53 @@ class OnlineService {
 
   static int? _asInt(Object? v) => v is int ? v : (v is num ? v.toInt() : null);
 
+  /// Normalises a node to a Map, tolerating Firebase's List representation.
+  static Map? _asMap(Object? v) {
+    if (v is Map) return v;
+    if (v is List) {
+      final m = <String, Object?>{};
+      for (var i = 0; i < v.length; i++) {
+        if (v[i] != null) m['t$i'] = v[i];
+      }
+      return m;
+    }
+    return null;
+  }
+
+  static String _ongoingMsg(
+      CowboyAction my, CowboyAction opp, TurnResult r, bool iAmHost) {
+    final myFired = iAmHost ? r.p1Fired : r.p2Fired;
+    final oppFired = iAmHost ? r.p2Fired : r.p1Fired;
+    if (myFired && opp == CowboyAction.defend) return '상대가 막았다!';
+    if (oppFired && my == CowboyAction.defend) return '내가 막았다!';
+    if (my == CowboyAction.reload && opp == CowboyAction.reload) {
+      return '둘 다 장전!';
+    }
+    return '계속 간다!';
+  }
+
   /// Replays the move log to produce a consistent view for [mySlot].
   static RoomView computeView(Map data, Slot mySlot) {
     final host = data['host'];
     final guest = data['guest'];
     final opponentJoined = mySlot == Slot.host ? guest != null : host != null;
-    final turns = (data['turns'] as Map?) ?? const {};
+    final turns = _asMap(data['turns']) ?? const {};
+    final iAmHost = mySlot == Slot.host;
 
     int ammoHost = 0, ammoGuest = 0;
     CowboyAction? lastHost, lastGuest;
+    String? lastBanner;
 
     int t = 0;
     while (true) {
-      final turn = turns['$t'] as Map?;
+      final turn = _asMap(turns['t$t']);
       final hRaw = turn == null ? null : _asInt(turn['host']);
       final gRaw = turn == null ? null : _asInt(turn['guest']);
 
       if (hRaw == null || gRaw == null) {
-        // Pending turn: waiting for one or both moves.
         final mineKey = mySlot.key;
-        final iSubmitted = turn != null && turn[mineKey] != null;
+        final myRaw = turn == null ? null : _asInt(turn[mineKey]);
+        final iSubmitted = myRaw != null;
         return _view(
           opponentJoined: opponentJoined,
           phase: iSubmitted
@@ -149,10 +184,13 @@ class OnlineService {
           ammoGuest: ammoGuest,
           lastHost: lastHost,
           lastGuest: lastGuest,
+          myPending: myRaw == null ? null : CowboyAction.values[myRaw],
           iSubmitted: iSubmitted,
           iTapped: false,
           iWon: null,
-          banner: iSubmitted ? '상대를 기다리는 중...' : '장전 · 방어 · 빵야!',
+          banner: iSubmitted
+              ? '상대를 기다리는 중...'
+              : (lastBanner ?? '장전 · 방어 · 빵야!'),
         );
       }
 
@@ -176,8 +214,9 @@ class OnlineService {
         final stHost = turn!['st_host'];
         final stGuest = turn['st_guest'];
         if (stHost != null && stGuest != null) {
-          final winner =
-              (_asInt(stHost) ?? 0) <= (_asInt(stGuest) ?? 0) ? Slot.host : Slot.guest;
+          final winner = (_asInt(stHost) ?? 0) <= (_asInt(stGuest) ?? 0)
+              ? Slot.host
+              : Slot.guest;
           return _over(opponentJoined, mySlot, ammoHost, ammoGuest, lastHost,
               lastGuest, winner, '카우보이!');
         }
@@ -191,13 +230,16 @@ class OnlineService {
           ammoGuest: ammoGuest,
           lastHost: lastHost,
           lastGuest: lastGuest,
+          myPending: null,
           iSubmitted: true,
           iTapped: mineTapped,
           iWon: null,
           banner: '동시에 빵야! 카우보이!',
         );
       }
-      // ongoing → next turn
+      // ongoing → remember a friendly result, then advance
+      lastBanner = _ongoingMsg(
+          iAmHost ? aHost : aGuest, iAmHost ? aGuest : aHost, r, iAmHost);
       t++;
     }
   }
@@ -221,6 +263,7 @@ class OnlineService {
       ammoGuest: ammoGuest,
       lastHost: lastHost,
       lastGuest: lastGuest,
+      myPending: null,
       iSubmitted: true,
       iTapped: true,
       iWon: winner == mySlot,
@@ -237,6 +280,7 @@ class OnlineService {
     required int ammoGuest,
     required CowboyAction? lastHost,
     required CowboyAction? lastGuest,
+    required CowboyAction? myPending,
     required bool iSubmitted,
     required bool iTapped,
     required bool? iWon,
@@ -251,6 +295,7 @@ class OnlineService {
       oppAmmo: mine ? ammoGuest : ammoHost,
       myLastAction: mine ? lastHost : lastGuest,
       oppLastAction: mine ? lastGuest : lastHost,
+      myPendingAction: myPending,
       iSubmitted: iSubmitted,
       iTappedStandoff: iTapped,
       iWon: iWon,

@@ -51,9 +51,15 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       return;
     }
     final data = value;
-    final view = OnlineService.computeView(data, widget.mySlot);
+    RoomView view;
+    try {
+      view = OnlineService.computeView(data, widget.mySlot);
+    } catch (_) {
+      // Never freeze the screen on a transient parse issue — keep last view.
+      return;
+    }
 
-    final rematch = data['rematch'] as Map?;
+    final rematch = data['rematch'] is Map ? data['rematch'] as Map : null;
     if (widget.mySlot == Slot.host &&
         rematch != null &&
         rematch['host'] == true &&
@@ -202,11 +208,44 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final choosing = v.phase == OnlinePhase.choosing;
     final canShoot = v.myAmmo > 0;
     if (v.phase == OnlinePhase.waitingForOpponent) {
+      final mine = v.myPendingAction;
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         alignment: Alignment.center,
-        child: Text('선택 완료! 상대를 기다리는 중...',
-            style: TextStyle(color: CD.muted, fontWeight: FontWeight.w700)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (mine != null) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: CD.actionColor(mine),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Emo(actionEmoji(mine), size: 18),
+                    const SizedBox(width: 6),
+                    Text('내 선택: ${mine.ko}',
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w900)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            const SizedBox(
+                width: 16,
+                height: 16,
+                child:
+                    CircularProgressIndicator(strokeWidth: 2, color: CD.rust)),
+            const SizedBox(width: 8),
+            Text('상대 기다리는 중...',
+                style: TextStyle(color: CD.muted, fontWeight: FontWeight.w700)),
+          ],
+        ),
       );
     }
     return Row(
