@@ -31,6 +31,22 @@
 
   <title>카우보이 듀얼</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Always serve the freshest deploy: drop any old service worker / caches
+       so updates show up on a normal refresh instead of being stuck behind
+       Flutter's offline cache. -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (rs) {
+        rs.forEach(function (r) { r.unregister(); });
+      }).catch(function () {});
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (ks) {
+          ks.forEach(function (k) { caches.delete(k); });
+        }).catch(function () {});
+      }
+    }
+  </script>
 </head>
 <body>
   <!--
