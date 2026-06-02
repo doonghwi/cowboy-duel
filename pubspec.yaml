@@ -48,6 +48,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -80,6 +81,18 @@ flutter:
     - family: Rye
       fonts:
         - asset: assets/fonts/Rye-Regular.ttf
+
+# App icon + web favicon generation (original cowboy-hat art, no copyright).
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  adaptive_icon_background: "#C8541E"
+  adaptive_icon_foreground: "assets/icon/icon_fg.png"
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#C8541E"
+    theme_color: "#C8541E"
 
   # To add assets to your application, add an assets section, like this:
   # assets:
