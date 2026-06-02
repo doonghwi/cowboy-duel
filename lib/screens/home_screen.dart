@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 28),
 
                     _BigButton(
-                      label: 'CPU와 대결',
+                      label: '컴퓨터와 대결',
                       emoji: 'bang',
                       color: CD.rust,
                       onTap: () {

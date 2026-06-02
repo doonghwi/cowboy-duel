@@ -138,7 +138,7 @@ class _GameScreenState extends State<GameScreen>
   String _ongoingBanner(TurnResult r) {
     final pDefend = _playerAction == CowboyAction.defend;
     final cDefend = _cpuAction == CowboyAction.defend;
-    if (r.p1Fired && cDefend) return 'CPU가 방어로 막았다!';
+    if (r.p1Fired && cDefend) return '컴퓨터가 방어로 막았다!';
     if (r.p2Fired && pDefend) return '방어 성공!';
     if (_playerAction == CowboyAction.reload &&
         _cpuAction == CowboyAction.reload) {
@@ -247,7 +247,7 @@ class _GameScreenState extends State<GameScreen>
               color: CD.leather,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Text('나 $_playerScore : $_cpuScore CPU',
+            child: Text('나 $_playerScore : $_cpuScore 컴퓨터',
                 style: const TextStyle(
                     fontWeight: FontWeight.w900, color: Colors.white)),
           ),
@@ -266,7 +266,7 @@ class _GameScreenState extends State<GameScreen>
             'cpu',
             _fighter(
               emoji: 'robot',
-              name: 'CPU (${widget.difficulty.ko})',
+              name: '컴퓨터 (${widget.difficulty.ko})',
               ammo: _cpuAmmo,
               action: _phase == _Phase.reveal ? _cpuAction : null,
               color: CD.leather,
@@ -523,7 +523,7 @@ class _GameScreenState extends State<GameScreen>
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16, color: CD.muted)),
               const SizedBox(height: 6),
-              Text('나 $_playerScore : $_cpuScore CPU',
+              Text('나 $_playerScore : $_cpuScore 컴퓨터',
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w900)),
               const SizedBox(height: 22),

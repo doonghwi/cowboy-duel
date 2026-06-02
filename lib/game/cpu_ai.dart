@@ -40,40 +40,67 @@ CowboyAction chooseCpuAction({
   required Difficulty difficulty,
   required Random rng,
 }) {
-  // Weight map for the three actions; highest roll wins.
-  double reload, defend, shoot;
-
-  if (cpuAmmo == 0) {
-    // Can't shoot. Reload, but guard against a player who can fire.
-    if (playerAmmo > 0) {
-      defend = 0.55;
-      reload = 0.45;
-      shoot = 0.0;
-    } else {
-      reload = 0.85;
-      defend = 0.15;
-      shoot = 0.0;
-    }
-  } else if (playerAmmo == 0) {
-    // Player can't fire this turn → a shot is low risk.
-    shoot = 0.65;
-    reload = 0.20;
-    defend = 0.15;
-  } else {
-    // Both armed: the tense case. Mix it up.
-    shoot = 0.40;
-    defend = 0.35;
-    reload = 0.25;
+  // Strictly-correct case: if neither side has ammo, nobody can shoot this
+  // turn, so the only useful move is to reload. Every difficulty plays it.
+  if (cpuAmmo == 0 && playerAmmo == 0) {
+    return CowboyAction.reload;
   }
 
-  // Difficulty tilts the armed-vs-armed case toward smarter play.
-  if (difficulty == Difficulty.hard && cpuAmmo > 0 && playerAmmo > 0) {
-    shoot += 0.10;
-    reload -= 0.10;
-  } else if (difficulty == Difficulty.easy) {
-    // Easy CPU sometimes wastes a turn.
-    reload += 0.10;
-    shoot -= 0.10;
+  double reload = 0, defend = 0, shoot = 0;
+  if (cpuAmmo == 0) {
+    // Empty against an armed player: survive, but still need to arm up.
+    switch (difficulty) {
+      case Difficulty.easy:
+        reload = 0.55;
+        defend = 0.45;
+        break;
+      case Difficulty.normal:
+        reload = 0.40;
+        defend = 0.60;
+        break;
+      case Difficulty.hard:
+        reload = 0.30;
+        defend = 0.70;
+        break;
+    }
+  } else if (playerAmmo == 0) {
+    // Player can't fire this turn → a shot punishes their reload.
+    switch (difficulty) {
+      case Difficulty.easy:
+        shoot = 0.45;
+        reload = 0.35;
+        defend = 0.20;
+        break;
+      case Difficulty.normal:
+        shoot = 0.60;
+        reload = 0.25;
+        defend = 0.15;
+        break;
+      case Difficulty.hard:
+        shoot = 0.72;
+        reload = 0.18;
+        defend = 0.10;
+        break;
+    }
+  } else {
+    // Both armed: the tense mind-game. Mix shoot/defend, rarely reload.
+    switch (difficulty) {
+      case Difficulty.easy:
+        shoot = 0.34;
+        defend = 0.33;
+        reload = 0.33;
+        break;
+      case Difficulty.normal:
+        shoot = 0.42;
+        defend = 0.42;
+        reload = 0.16;
+        break;
+      case Difficulty.hard:
+        shoot = 0.47;
+        defend = 0.45;
+        reload = 0.08;
+        break;
+    }
   }
 
   final total = reload + defend + shoot;

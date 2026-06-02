@@ -74,6 +74,17 @@ class OnlineService {
     return List.generate(4, (_) => _codeChars[r.nextInt(_codeChars.length)]).join();
   }
 
+  static const _nickPool = [
+    '방랑객', '총잡이', '무법자', '보안관', '건맨', '독수리',
+    '선인장', '리볼버', '데드샷', '현상금'
+  ];
+
+  /// A fun random western nickname for players who don't type one.
+  static String randomNickname() {
+    final r = Random();
+    return '${_nickPool[r.nextInt(_nickPool.length)]}${10 + r.nextInt(90)}';
+  }
+
   DatabaseReference room(String code) => _root.child('rooms/$code');
 
   Future<void> createRoom(String code, String name) async {

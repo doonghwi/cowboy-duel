@@ -24,7 +24,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
   String _nick() {
     final n = _nameCtrl.text.trim();
-    return n.isEmpty ? '카우보이' : n;
+    return n.isEmpty ? OnlineService.randomNickname() : n;
   }
 
   @override
