@@ -144,7 +144,8 @@ class _GameScreenState extends State<GameScreen>
         _cpuAction == CowboyAction.reload) {
       return '둘 다 장전!';
     }
-    return '계속 간다!';
+    if (pDefend && cDefend) return '둘 다 방어!';
+    return '서로 탐색 중!';
   }
 
   void _startStandoff() {

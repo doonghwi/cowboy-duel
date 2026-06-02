@@ -18,12 +18,19 @@ class OnlineLobbyScreen extends StatefulWidget {
 class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   final _service = OnlineService();
   final _codeCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
   bool _busy = false;
   String? _error;
+
+  String _nick() {
+    final n = _nameCtrl.text.trim();
+    return n.isEmpty ? '카우보이' : n;
+  }
 
   @override
   void dispose() {
     _codeCtrl.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
@@ -34,7 +41,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     });
     try {
       final code = OnlineService.generateRoomCode();
-      await _service.createRoom(code);
+      await _service.createRoom(code, _nick());
       if (!mounted) return;
       Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => OnlineGameScreen(
@@ -61,7 +68,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       _error = null;
     });
     try {
-      final ok = await _service.joinRoom(code);
+      final ok = await _service.joinRoom(code, _nick());
       if (!ok) {
         setState(() => _error = '방을 찾을 수 없어요. 코드를 확인하세요.');
         return;
@@ -103,7 +110,28 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     const SizedBox(height: 12),
                     Text('친구와 한판!',
                         style: posterTitle(32, color: _cream)),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+                    TextField(
+                      controller: _nameCtrl,
+                      textAlign: TextAlign.center,
+                      maxLength: 10,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: CD.ink),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        hintText: '닉네임 (예: 카우보이)',
+                        hintStyle: TextStyle(
+                            color: CD.muted.withValues(alpha: 0.5),
+                            fontWeight: FontWeight.w500),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: const Icon(Icons.badge, color: CD.muted),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     if (_error != null)
                       Container(
                         width: double.infinity,

@@ -30,6 +30,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   StreamSubscription<DatabaseEvent>? _sub;
   Map? _data;
   RoomView? _view;
+  bool _resetting = false;
   late final AnimationController _pulse;
 
   @override
@@ -59,12 +60,19 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       return;
     }
 
+    // Host records the finished duel's winner into the room score, then resets
+    // for the next duel — guarded so it runs exactly once per duel.
     final rematch = data['rematch'] is Map ? data['rematch'] as Map : null;
     if (widget.mySlot == Slot.host &&
+        !_resetting &&
         rematch != null &&
         rematch['host'] == true &&
         rematch['guest'] == true) {
-      widget.service.resetForRematch(widget.code);
+      _resetting = true;
+      final winnerKey = view.iWon == true ? 'host' : 'guest';
+      widget.service
+          .recordWinAndReset(widget.code, winnerKey)
+          .whenComplete(() => _resetting = false);
     }
 
     setState(() {
@@ -99,12 +107,39 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     widget.service.requestRematch(widget.code, widget.mySlot);
   }
 
+  /// Nickname for a slot, read live from the room (falls back to 나/상대).
+  String _name(Slot slot) {
+    final names = _data?['names'];
+    final n = names is Map ? names[slot.key] : null;
+    if (n is String && n.trim().isNotEmpty) return n;
+    return slot == widget.mySlot ? '나' : '상대';
+  }
+
   @override
   Widget build(BuildContext context) {
     final v = _view;
     return Scaffold(
       appBar: AppBar(
-        title: Text('온라인 · 방 ${widget.code}', style: posterTitle(20)),
+        title: Text('방 ${widget.code}', style: posterTitle(20)),
+        actions: [
+          if (v != null && v.opponentJoined)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: CD.leather,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text('나 ${v.myScore} : ${v.oppScore} 상대',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w900)),
+                ),
+              ),
+            ),
+        ],
       ),
       body: DesertBackground(
         bright: true,
@@ -177,8 +212,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             children: [
               const SizedBox(height: 8),
-              _fighter('person', '상대', v.oppAmmo, v.oppLastAction,
-                  CD.leather),
+              _fighter('person', _name(widget.mySlot.other), v.oppAmmo,
+                  v.oppLastAction, CD.leather,
+                  submitted: v.opponentSubmitted),
               Expanded(
                 child: Center(
                   child: Text(
@@ -191,7 +227,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                   ),
                 ),
               ),
-              _fighter('cowboy', '나', v.myAmmo, v.myLastAction, CD.rust),
+              _fighter('cowboy', _name(widget.mySlot), v.myAmmo,
+                  v.myLastAction, CD.rust),
               const SizedBox(height: 16),
               _controls(v),
               const SizedBox(height: 18),
@@ -291,8 +328,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     );
   }
 
-  Widget _fighter(
-      String emoji, String name, int ammo, CowboyAction? last, Color color) {
+  Widget _fighter(String emoji, String name, int ammo, CowboyAction? last,
+      Color color,
+      {bool submitted = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -336,7 +374,25 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
               ],
             ),
           ),
-          if (last != null)
+          if (submitted)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: CD.sage,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.check_circle, color: Colors.white, size: 18),
+                  SizedBox(width: 6),
+                  Text('선택 완료',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w900)),
+                ],
+              ),
+            )
+          else if (last != null)
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
