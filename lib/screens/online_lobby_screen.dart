@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../online/online_service.dart';
 import '../theme.dart';
 import '../widgets/desert_background.dart';
+import '../widgets/emo.dart';
 import 'online_game_screen.dart';
 
 const _cream = Color(0xFFFFF4DD);
@@ -98,17 +99,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: CD.sage,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: _cream, width: 3),
-                      ),
-                      child:
-                          const Icon(Icons.public, color: _cream, size: 44),
-                    ),
+                    const Emo('globe', size: 76),
                     const SizedBox(height: 12),
                     Text('친구와 한판!',
                         style: posterTitle(32, color: _cream)),

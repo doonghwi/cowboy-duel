@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../widgets/emo.dart';
 
 class HowToPlayScreen extends StatelessWidget {
   const HowToPlayScreen({super.key});
@@ -21,19 +22,19 @@ class HowToPlayScreen extends StatelessWidget {
                   _Intro(),
                   SizedBox(height: 18),
                   _RuleCard(
-                    icon: Icons.cached,
+                    emoji: 'reload',
                     color: CD.gold,
                     title: '장전',
                     body: '총알을 한 발 장전해요. 장전을 해야만 공격(빵야)을 할 수 있어요.',
                   ),
                   _RuleCard(
-                    icon: Icons.shield,
+                    emoji: 'shield',
                     color: CD.sage,
                     title: '방어',
                     body: '상대가 빵야 할 때 방어하면 맞지 않아요. 단, 방어 중엔 공격할 수 없어요.',
                   ),
                   _RuleCard(
-                    icon: Icons.local_fire_department,
+                    emoji: 'bang',
                     color: CD.danger,
                     title: '빵야',
                     body: '장전된 총알로 공격해요! 상대가 방어하지 않았다면 명중 — 승리!',
@@ -71,12 +72,12 @@ class _Intro extends StatelessWidget {
 }
 
 class _RuleCard extends StatelessWidget {
-  final IconData icon;
+  final String emoji;
   final Color color;
   final String title;
   final String body;
   const _RuleCard({
-    required this.icon,
+    required this.emoji,
     required this.color,
     required this.title,
     required this.body,
@@ -103,7 +104,7 @@ class _RuleCard extends StatelessWidget {
               color: color,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Colors.white, size: 28),
+            child: Emo(emoji, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -145,7 +146,7 @@ class _StandoffCard extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.local_fire_department, color: Colors.white, size: 24),
+              Emo('bang', size: 24),
               SizedBox(width: 8),
               Text('동시에 빵야!',
                   style: TextStyle(
@@ -181,7 +182,7 @@ class _Tips extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.lightbulb, color: CD.gold, size: 20),
+              const Emo('bulb', size: 20),
               const SizedBox(width: 6),
               Text('작전 팁',
                   style: TextStyle(

@@ -4,6 +4,7 @@ import '../game/cpu_ai.dart';
 import '../main.dart' show firebaseReady;
 import '../theme.dart';
 import '../widgets/desert_background.dart';
+import '../widgets/emo.dart';
 import 'game_screen.dart';
 import 'how_to_play_screen.dart';
 import 'online_lobby_screen.dart';
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     _BigButton(
                       label: 'CPU와 대결',
-                      icon: Icons.local_fire_department,
+                      emoji: 'bang',
                       color: CD.rust,
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
@@ -88,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 14),
                       _BigButton(
                         label: '온라인 대전',
-                        icon: Icons.public,
+                        emoji: 'globe',
                         color: CD.sage,
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -100,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 14),
                     _BigButton(
                       label: '게임 방법',
-                      icon: Icons.menu_book,
+                      emoji: 'book',
                       color: CD.leather,
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
@@ -119,8 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Two gunslingers facing off with a "VS" between — mode-agnostic (works for
-/// both CPU and online), no emoji box.
+/// Two gunslingers facing off with a "VS" between (plain emoji, no box).
 class _DuelEmblem extends StatelessWidget {
   const _DuelEmblem();
 
@@ -129,7 +129,7 @@ class _DuelEmblem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _badge(CD.rust),
+        const Emo('cowboy', size: 58),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -142,24 +142,8 @@ class _DuelEmblem extends StatelessWidget {
             ),
           ),
         ),
-        _badge(CD.leather),
+        const Emo('robot', size: 58),
       ],
-    );
-  }
-
-  Widget _badge(Color color) {
-    return Container(
-      width: 66,
-      height: 66,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: _cream, width: 3),
-        boxShadow: const [
-          BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 3)),
-        ],
-      ),
-      child: const Icon(Icons.person, color: _cream, size: 38),
     );
   }
 }
@@ -212,12 +196,12 @@ class _DifficultyPicker extends StatelessWidget {
 
 class _BigButton extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final String emoji;
   final Color color;
   final VoidCallback onTap;
   const _BigButton({
     required this.label,
-    required this.icon,
+    required this.emoji,
     required this.color,
     required this.onTap,
   });
@@ -239,7 +223,7 @@ class _BigButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: Colors.white, size: 24),
+                Emo(emoji, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   label,

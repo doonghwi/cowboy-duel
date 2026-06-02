@@ -7,6 +7,7 @@ import '../game/cpu_ai.dart';
 import '../game/game_logic.dart';
 import '../theme.dart';
 import '../widgets/desert_background.dart';
+import '../widgets/emo.dart';
 
 enum _Phase { choosing, reveal, standoff, roundOver }
 
@@ -263,7 +264,7 @@ class _GameScreenState extends State<GameScreen>
           _shakeable(
             'cpu',
             _fighter(
-              icon: Icons.smart_toy,
+              emoji: 'robot',
               name: 'CPU (${widget.difficulty.ko})',
               ammo: _cpuAmmo,
               action: _phase == _Phase.reveal ? _cpuAction : null,
@@ -287,7 +288,7 @@ class _GameScreenState extends State<GameScreen>
           _shakeable(
             'player',
             _fighter(
-              icon: Icons.person,
+              emoji: 'cowboy',
               name: '나',
               ammo: _playerAmmo,
               action: _phase == _Phase.reveal ? _playerAction : null,
@@ -316,7 +317,7 @@ class _GameScreenState extends State<GameScreen>
   }
 
   Widget _fighter({
-    required IconData icon,
+    required String emoji,
     required String name,
     required int ammo,
     required CowboyAction? action,
@@ -334,12 +335,7 @@ class _GameScreenState extends State<GameScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Icon(icon, color: Colors.white, size: 32),
-          ),
+          Emo(emoji, size: 48),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -370,7 +366,7 @@ class _GameScreenState extends State<GameScreen>
       ),
       child: Row(
         children: [
-          Icon(actionIcon(action), color: Colors.white, size: 20),
+          Emo(actionEmoji(action), size: 20),
           const SizedBox(width: 6),
           Text(action.ko,
               style: const TextStyle(
@@ -394,7 +390,7 @@ class _GameScreenState extends State<GameScreen>
               ammo,
               (_) => const Padding(
                 padding: EdgeInsets.only(right: 3),
-                child: Icon(Icons.circle, size: 12, color: CD.gold),
+                child: Emo('ammo', size: 15),
               ),
             ),
           ),
@@ -433,7 +429,7 @@ class _GameScreenState extends State<GameScreen>
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 children: [
-                  Icon(actionIcon(a), color: Colors.white, size: 30),
+                  Emo(actionEmoji(a), size: 30),
                   const SizedBox(height: 6),
                   Text(a.ko,
                       style: const TextStyle(
@@ -459,8 +455,16 @@ class _GameScreenState extends State<GameScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(_standoffGo ? Icons.local_fire_department : Icons.bolt,
-                  color: Colors.white, size: 72),
+              _standoffGo
+                  ? const Emo('bang', size: 84)
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Emo('cowboy', size: 48),
+                        SizedBox(width: 12),
+                        Emo('robot', size: 48),
+                      ],
+                    ),
               const SizedBox(height: 20),
               ScaleTransition(
                 scale: _standoffGo
@@ -507,8 +511,7 @@ class _GameScreenState extends State<GameScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(won ? Icons.emoji_events : Icons.heart_broken,
-                  color: won ? CD.gold : CD.danger, size: 64),
+              Emo(won ? 'trophy' : 'skull', size: 64),
               const SizedBox(height: 10),
               Text(
                 won ? '승리!' : '패배',

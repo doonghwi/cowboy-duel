@@ -8,6 +8,7 @@ import '../game/game_logic.dart';
 import '../online/online_service.dart';
 import '../theme.dart';
 import '../widgets/desert_background.dart';
+import '../widgets/emo.dart';
 
 class OnlineGameScreen extends StatefulWidget {
   final OnlineService service;
@@ -121,13 +122,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 84,
-              height: 84,
-              decoration: const BoxDecoration(
-                  color: CD.rust, shape: BoxShape.circle),
-              child: const Icon(Icons.person, color: Colors.white, size: 48),
-            ),
+            const Emo('cowboy', size: 80),
             const SizedBox(height: 14),
             Text('친구를 기다리는 중...', style: posterTitle(24)),
             const SizedBox(height: 24),
@@ -176,7 +171,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             children: [
               const SizedBox(height: 8),
-              _fighter(Icons.person, '상대', v.oppAmmo, v.oppLastAction,
+              _fighter('person', '상대', v.oppAmmo, v.oppLastAction,
                   CD.leather),
               Expanded(
                 child: Center(
@@ -190,7 +185,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                   ),
                 ),
               ),
-              _fighter(Icons.person, '나', v.myAmmo, v.myLastAction, CD.rust),
+              _fighter('cowboy', '나', v.myAmmo, v.myLastAction, CD.rust),
               const SizedBox(height: 16),
               _controls(v),
               const SizedBox(height: 18),
@@ -241,7 +236,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 children: [
-                  Icon(actionIcon(a), color: Colors.white, size: 28),
+                  Emo(actionEmoji(a), size: 28),
                   const SizedBox(height: 6),
                   Text(a.ko,
                       style: const TextStyle(
@@ -258,7 +253,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   }
 
   Widget _fighter(
-      IconData icon, String name, int ammo, CowboyAction? last, Color color) {
+      String emoji, String name, int ammo, CowboyAction? last, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -268,12 +263,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
+          Emo(emoji, size: 44),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -299,8 +289,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                             ammo,
                             (_) => const Padding(
                                   padding: EdgeInsets.only(right: 3),
-                                  child: Icon(Icons.circle,
-                                      size: 12, color: CD.gold),
+                                  child: Emo('ammo', size: 14),
                                 )),
                       ),
                   ],
@@ -318,7 +307,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
               ),
               child: Row(
                 children: [
-                  Icon(actionIcon(last), color: Colors.white, size: 18),
+                  Emo(actionEmoji(last), size: 18),
                   const SizedBox(width: 6),
                   Text(last.ko,
                       style: const TextStyle(
@@ -341,8 +330,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.local_fire_department,
-                  color: Colors.white, size: 72),
+              const Emo('bang', size: 80),
               const SizedBox(height: 16),
               if (v.iTappedStandoff)
                 const Text('탭 완료!\n상대 기다리는 중...',
@@ -391,8 +379,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(won ? Icons.emoji_events : Icons.heart_broken,
-                  color: won ? CD.gold : CD.danger, size: 64),
+              Emo(won ? 'trophy' : 'skull', size: 64),
               const SizedBox(height: 8),
               Text(won ? '승리!' : '패배',
                   style: posterTitle(38, color: won ? CD.sage : CD.danger)),
