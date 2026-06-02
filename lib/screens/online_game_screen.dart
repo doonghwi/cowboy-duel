@@ -52,7 +52,6 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final data = value;
     final view = OnlineService.computeView(data, widget.mySlot);
 
-    // Host clears the board once both players asked for a rematch.
     final rematch = data['rematch'] as Map?;
     if (widget.mySlot == Slot.host &&
         rematch != null &&
@@ -122,8 +121,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🤠', style: TextStyle(fontSize: 56)),
-            const SizedBox(height: 12),
+            Container(
+              width: 84,
+              height: 84,
+              decoration: const BoxDecoration(
+                  color: CD.rust, shape: BoxShape.circle),
+              child: const Icon(Icons.person, color: Colors.white, size: 48),
+            ),
+            const SizedBox(height: 14),
             Text('친구를 기다리는 중...', style: posterTitle(24)),
             const SizedBox(height: 24),
             Text('방 코드', style: TextStyle(color: CD.muted, fontSize: 14)),
@@ -171,20 +176,21 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             children: [
               const SizedBox(height: 8),
-              _fighter('🤖 상대', v.oppAmmo, v.oppLastAction, CD.leather),
+              _fighter(Icons.person, '상대', v.oppAmmo, v.oppLastAction,
+                  CD.leather),
               Expanded(
                 child: Center(
                   child: Text(
                     v.banner,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         color: CD.rust),
                   ),
                 ),
               ),
-              _fighter('🤠 나', v.myAmmo, v.myLastAction, CD.rust),
+              _fighter(Icons.person, '나', v.myAmmo, v.myLastAction, CD.rust),
               const SizedBox(height: 16),
               _controls(v),
               const SizedBox(height: 18),
@@ -235,7 +241,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 children: [
-                  Text(a.emoji, style: const TextStyle(fontSize: 28)),
+                  Icon(actionIcon(a), color: Colors.white, size: 28),
                   const SizedBox(height: 6),
                   Text(a.ko,
                       style: const TextStyle(
@@ -251,7 +257,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     );
   }
 
-  Widget _fighter(String name, int ammo, CowboyAction? last, Color color) {
+  Widget _fighter(
+      IconData icon, String name, int ammo, CowboyAction? last, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -261,6 +268,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       ),
       child: Row(
         children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,8 +299,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                             ammo,
                             (_) => const Padding(
                                   padding: EdgeInsets.only(right: 3),
-                                  child: Text('🔸',
-                                      style: TextStyle(fontSize: 14)),
+                                  child: Icon(Icons.circle,
+                                      size: 12, color: CD.gold),
                                 )),
                       ),
                   ],
@@ -302,9 +316,15 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                 color: CD.actionColor(last),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text('${last.emoji} ${last.ko}',
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w900)),
+              child: Row(
+                children: [
+                  Icon(actionIcon(last), color: Colors.white, size: 18),
+                  const SizedBox(width: 6),
+                  Text(last.ko,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w900)),
+                ],
+              ),
             ),
         ],
       ),
@@ -321,7 +341,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('💥', style: TextStyle(fontSize: 64)),
+              const Icon(Icons.local_fire_department,
+                  color: Colors.white, size: 72),
               const SizedBox(height: 16),
               if (v.iTappedStandoff)
                 const Text('탭 완료!\n상대 기다리는 중...',
@@ -370,7 +391,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(won ? '🏆' : '💀', style: const TextStyle(fontSize: 64)),
+              Icon(won ? Icons.emoji_events : Icons.heart_broken,
+                  color: won ? CD.gold : CD.danger, size: 64),
               const SizedBox(height: 8),
               Text(won ? '승리!' : '패배',
                   style: posterTitle(38, color: won ? CD.sage : CD.danger)),

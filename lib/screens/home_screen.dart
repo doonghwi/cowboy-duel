@@ -51,24 +51,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 8),
                     Text(
                       '장전 · 방어 · 빵야!',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         letterSpacing: 4,
                         fontWeight: FontWeight.w800,
                         color: CD.gold,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text('🤠   🆚   🤖', style: TextStyle(fontSize: 34)),
-                    const SizedBox(height: 38),
+                    const SizedBox(height: 22),
+                    const _DuelEmblem(),
+                    const SizedBox(height: 34),
 
                     Text('난이도',
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: _cream,
                             fontWeight: FontWeight.w700,
-                            shadows: const [
-                              Shadow(color: Colors.black45, blurRadius: 4)
-                            ])),
+                            shadows: [Shadow(color: Colors.black45, blurRadius: 4)])),
                     const SizedBox(height: 8),
                     _DifficultyPicker(
                       value: _difficulty,
@@ -78,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     _BigButton(
                       label: 'CPU와 대결',
-                      icon: '💥',
+                      icon: Icons.local_fire_department,
                       color: CD.rust,
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
@@ -90,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 14),
                       _BigButton(
                         label: '온라인 대전',
-                        icon: '🌐',
+                        icon: Icons.public,
                         color: CD.sage,
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -102,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 14),
                     _BigButton(
                       label: '게임 방법',
-                      icon: '📖',
+                      icon: Icons.menu_book,
                       color: CD.leather,
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
@@ -117,6 +115,51 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Two gunslingers facing off with a "VS" between — mode-agnostic (works for
+/// both CPU and online), no emoji box.
+class _DuelEmblem extends StatelessWidget {
+  const _DuelEmblem();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _badge(CD.rust),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'VS',
+            style: TextStyle(
+              fontFamily: 'BlackHanSans',
+              fontSize: 30,
+              color: _cream,
+              shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
+            ),
+          ),
+        ),
+        _badge(CD.leather),
+      ],
+    );
+  }
+
+  Widget _badge(Color color) {
+    return Container(
+      width: 66,
+      height: 66,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: _cream, width: 3),
+        boxShadow: const [
+          BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 3)),
+        ],
+      ),
+      child: const Icon(Icons.person, color: _cream, size: 38),
     );
   }
 }
@@ -169,7 +212,7 @@ class _DifficultyPicker extends StatelessWidget {
 
 class _BigButton extends StatelessWidget {
   final String label;
-  final String icon;
+  final IconData icon;
   final Color color;
   final VoidCallback onTap;
   const _BigButton({
@@ -196,7 +239,7 @@ class _BigButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(icon, style: const TextStyle(fontSize: 24)),
+                Icon(icon, color: Colors.white, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   label,

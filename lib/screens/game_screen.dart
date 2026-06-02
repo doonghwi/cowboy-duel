@@ -33,12 +33,10 @@ class _GameScreenState extends State<GameScreen>
   String _banner = '준비됐나, 카우보이?';
   bool _playerWonDuel = false;
 
-  // Which fighter is currently reeling from a hit ('player' | 'cpu' | null).
-  String? _shakeWhich;
+  String? _shakeWhich; // 'player' | 'cpu' | null
   late final AnimationController _shakeCtrl;
   late final AnimationController _pulseCtrl;
 
-  // Stand-off ("카우보이!" race) state.
   bool _standoffGo = false;
   bool _standoffResolved = false;
   Timer? _cpuTimer;
@@ -48,8 +46,8 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
-    _shakeCtrl =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _shakeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
     _pulseCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 520))
       ..repeat(reverse: true);
@@ -97,10 +95,10 @@ class _GameScreenState extends State<GameScreen>
         _startStandoff();
         break;
       case DuelOutcome.p1Hit:
-        _concludeDuel(playerWon: true, banner: '명중! 🎯', shakeCpu: true);
+        _concludeDuel(playerWon: true, banner: '명중!', shakeCpu: true);
         break;
       case DuelOutcome.p2Hit:
-        _concludeDuel(playerWon: false, banner: '당했다... 💀', shakeCpu: false);
+        _concludeDuel(playerWon: false, banner: '당했다...', shakeCpu: false);
         break;
       case DuelOutcome.ongoing:
         setState(() {
@@ -111,7 +109,6 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  /// Show the hit, shake the loser, then reveal the result modal.
   void _concludeDuel({
     required bool playerWon,
     required String banner,
@@ -140,11 +137,11 @@ class _GameScreenState extends State<GameScreen>
   String _ongoingBanner(TurnResult r) {
     final pDefend = _playerAction == CowboyAction.defend;
     final cDefend = _cpuAction == CowboyAction.defend;
-    if (r.p1Fired && cDefend) return 'CPU가 방어로 막았다! 🛡️';
-    if (r.p2Fired && pDefend) return '방어 성공! 🛡️';
+    if (r.p1Fired && cDefend) return 'CPU가 방어로 막았다!';
+    if (r.p2Fired && pDefend) return '방어 성공!';
     if (_playerAction == CowboyAction.reload &&
         _cpuAction == CowboyAction.reload) {
-      return '둘 다 장전! 🔄';
+      return '둘 다 장전!';
     }
     return '계속 간다!';
   }
@@ -152,7 +149,7 @@ class _GameScreenState extends State<GameScreen>
   void _startStandoff() {
     _standoffGo = false;
     _standoffResolved = false;
-    final prep = 500 + _rng.nextInt(900); // 0.5 ~ 1.4s
+    final prep = 500 + _rng.nextInt(900);
     _prepTimer = Timer(Duration(milliseconds: prep), () {
       if (!mounted) return;
       setState(() => _standoffGo = true);
@@ -162,7 +159,7 @@ class _GameScreenState extends State<GameScreen>
       _cpuTimer =
           Timer(Duration(milliseconds: widget.difficulty.reactionMs), () {
         if (!_standoffResolved) {
-          _finishStandoff(playerWon: false, msg: 'CPU가 더 빨랐다! 🤖💥');
+          _finishStandoff(playerWon: false, msg: 'CPU가 더 빨랐다!');
         }
       });
     });
@@ -171,11 +168,11 @@ class _GameScreenState extends State<GameScreen>
   void _onStandoffTap() {
     if (_phase != _Phase.standoff || _standoffResolved) return;
     if (!_standoffGo) {
-      _finishStandoff(playerWon: false, msg: '너무 빨랐다! 부정출발 😵');
+      _finishStandoff(playerWon: false, msg: '너무 빨랐다! (부정출발)');
       return;
     }
     _sw.stop();
-    _finishStandoff(playerWon: true, msg: '카우보이! ⚡ ${_sw.elapsedMilliseconds}ms');
+    _finishStandoff(playerWon: true, msg: '카우보이! ${_sw.elapsedMilliseconds}ms');
   }
 
   void _finishStandoff({required bool playerWon, required String msg}) {
@@ -266,7 +263,7 @@ class _GameScreenState extends State<GameScreen>
           _shakeable(
             'cpu',
             _fighter(
-              emoji: '🤖',
+              icon: Icons.smart_toy,
               name: 'CPU (${widget.difficulty.ko})',
               ammo: _cpuAmmo,
               action: _phase == _Phase.reveal ? _cpuAction : null,
@@ -278,13 +275,11 @@ class _GameScreenState extends State<GameScreen>
               child: Text(
                 _banner,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: CD.rust,
-                  shadows: const [
-                    Shadow(color: Colors.white70, blurRadius: 6)
-                  ],
+                  shadows: [Shadow(color: Colors.white70, blurRadius: 6)],
                 ),
               ),
             ),
@@ -292,7 +287,7 @@ class _GameScreenState extends State<GameScreen>
           _shakeable(
             'player',
             _fighter(
-              emoji: '🤠',
+              icon: Icons.person,
               name: '나',
               ammo: _playerAmmo,
               action: _phase == _Phase.reveal ? _playerAction : null,
@@ -321,7 +316,7 @@ class _GameScreenState extends State<GameScreen>
   }
 
   Widget _fighter({
-    required String emoji,
+    required IconData icon,
     required String name,
     required int ammo,
     required CowboyAction? action,
@@ -339,7 +334,12 @@ class _GameScreenState extends State<GameScreen>
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 44)),
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, color: Colors.white, size: 32),
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -355,24 +355,26 @@ class _GameScreenState extends State<GameScreen>
               ],
             ),
           ),
-          if (action != null)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: CD.actionColor(action),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Text(action.emoji, style: const TextStyle(fontSize: 20)),
-                  const SizedBox(width: 6),
-                  Text(action.ko,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w900)),
-                ],
-              ),
-            ),
+          if (action != null) _actionChip(action),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionChip(CowboyAction action) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: CD.actionColor(action),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(actionIcon(action), color: Colors.white, size: 20),
+          const SizedBox(width: 6),
+          Text(action.ko,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -392,7 +394,7 @@ class _GameScreenState extends State<GameScreen>
               ammo,
               (_) => const Padding(
                 padding: EdgeInsets.only(right: 3),
-                child: Text('🔸', style: TextStyle(fontSize: 14)),
+                child: Icon(Icons.circle, size: 12, color: CD.gold),
               ),
             ),
           ),
@@ -431,7 +433,7 @@ class _GameScreenState extends State<GameScreen>
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: Column(
                 children: [
-                  Text(a.emoji, style: const TextStyle(fontSize: 30)),
+                  Icon(actionIcon(a), color: Colors.white, size: 30),
                   const SizedBox(height: 6),
                   Text(a.ko,
                       style: const TextStyle(
@@ -457,8 +459,8 @@ class _GameScreenState extends State<GameScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(_standoffGo ? '💥' : '🤠🆚🤖',
-                  style: const TextStyle(fontSize: 64)),
+              Icon(_standoffGo ? Icons.local_fire_department : Icons.bolt,
+                  color: Colors.white, size: 72),
               const SizedBox(height: 20),
               ScaleTransition(
                 scale: _standoffGo
@@ -505,7 +507,8 @@ class _GameScreenState extends State<GameScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(won ? '🏆' : '💀', style: const TextStyle(fontSize: 64)),
+              Icon(won ? Icons.emoji_events : Icons.heart_broken,
+                  color: won ? CD.gold : CD.danger, size: 64),
               const SizedBox(height: 10),
               Text(
                 won ? '승리!' : '패배',

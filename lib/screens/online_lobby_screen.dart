@@ -98,8 +98,18 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('🤠🌐🤠', style: TextStyle(fontSize: 40)),
-                    const SizedBox(height: 10),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: CD.sage,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _cream, width: 3),
+                      ),
+                      child:
+                          const Icon(Icons.public, color: _cream, size: 44),
+                    ),
+                    const SizedBox(height: 12),
                     Text('친구와 한판!',
                         style: posterTitle(32, color: _cream)),
                     const SizedBox(height: 24),
@@ -117,7 +127,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       ),
                     _BigButton(
                       label: _busy ? '...' : '방 만들기',
-                      icon: '➕',
+                      icon: Icons.add_circle_outline,
                       color: CD.rust,
                       onTap: _busy ? null : _create,
                     ),
@@ -144,17 +154,26 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                             style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: 8),
-                            decoration: const InputDecoration(
+                                letterSpacing: 8,
+                                color: CD.ink),
+                            decoration: InputDecoration(
                               counterText: '',
                               hintText: 'ABCD',
-                              border: OutlineInputBorder(),
+                              // Faint placeholder so it's clearly not filled in.
+                              hintStyle: TextStyle(
+                                color: CD.muted.withValues(alpha: 0.32),
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 8,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 10),
                           _BigButton(
                             label: _busy ? '...' : '참가하기',
-                            icon: '🚪',
+                            icon: Icons.login,
                             color: CD.sage,
                             onTap: _busy ? null : _join,
                           ),
@@ -174,7 +193,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
 class _BigButton extends StatelessWidget {
   final String label;
-  final String icon;
+  final IconData icon;
   final Color color;
   final VoidCallback? onTap;
   const _BigButton({
@@ -200,7 +219,7 @@ class _BigButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(icon, style: const TextStyle(fontSize: 22)),
+                Icon(icon, color: Colors.white, size: 22),
                 const SizedBox(width: 10),
                 Text(label,
                     style: const TextStyle(

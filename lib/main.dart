@@ -17,6 +17,13 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     firebaseReady = true;
+    // On mobile, persist queued writes so an open that happened offline still
+    // syncs to the usage counter once the device is back online.
+    if (!kIsWeb) {
+      try {
+        FirebaseDatabase.instance.setPersistenceEnabled(true);
+      } catch (_) {}
+    }
     _recordOpen();
   } catch (_) {
     // Firebase is optional — the offline vs-CPU game works without it.

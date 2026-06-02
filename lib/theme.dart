@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'game/game_logic.dart';
 
@@ -38,20 +37,32 @@ class CD {
   }
 }
 
+/// A bundled Material icon per action — no emoji, so nothing flashes on web.
+IconData actionIcon(CowboyAction a) {
+  switch (a) {
+    case CowboyAction.reload:
+      return Icons.cached;
+    case CowboyAction.defend:
+      return Icons.shield;
+    case CowboyAction.shoot:
+      return Icons.local_fire_department;
+  }
+}
+
 ThemeData buildCowboyTheme() {
   final base = ThemeData(
     useMaterial3: true,
     colorSchemeSeed: CD.rust,
     scaffoldBackgroundColor: CD.sand,
     brightness: Brightness.light,
-  );
-  // Noto Sans KR gives full Korean support across the whole app.
-  final textTheme = GoogleFonts.notoSansKrTextTheme(base.textTheme).apply(
-    bodyColor: CD.ink,
-    displayColor: CD.leather,
+    // Bundled Korean body font — full Hangul, no runtime download.
+    fontFamily: 'GothicA1',
   );
   return base.copyWith(
-    textTheme: textTheme,
+    textTheme: base.textTheme.apply(
+      bodyColor: CD.ink,
+      displayColor: CD.leather,
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -61,17 +72,19 @@ ThemeData buildCowboyTheme() {
   );
 }
 
-/// Heavy poster-style Korean title (Black Han Sans has full Hangul glyphs).
-TextStyle posterTitle(double size, {Color? color}) => GoogleFonts.blackHanSans(
+/// Heavy poster-style Korean title (Black Han Sans, bundled, full Hangul).
+TextStyle posterTitle(double size, {Color? color}) => TextStyle(
+      fontFamily: 'BlackHanSans',
       fontSize: size,
       letterSpacing: 1,
       color: color ?? CD.leather,
-      height: 1.05,
+      height: 1.08,
     );
 
-/// Latin-only western display font, for English taglines / numbers only.
+/// Bundled western display font (Rye) for Latin taglines / numbers only.
 TextStyle westernLatin(double size, {Color? color, double spacing = 1}) =>
-    GoogleFonts.rye(
+    TextStyle(
+      fontFamily: 'Rye',
       fontSize: size,
       letterSpacing: spacing,
       color: color ?? CD.rust,

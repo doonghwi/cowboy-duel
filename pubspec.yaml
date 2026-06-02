@@ -35,8 +35,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  # Western display fonts (Rye / Special Elite) for the wanted-poster look.
-  google_fonts: ^6.2.1
   firebase_core: ^4.10.0
   firebase_database: ^12.4.2
 
@@ -61,6 +59,22 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Bundled fonts (no runtime fetch) so Korean text never flashes as tofu.
+  fonts:
+    - family: BlackHanSans
+      fonts:
+        - asset: assets/fonts/BlackHanSans-Regular.ttf
+    - family: GothicA1
+      fonts:
+        - asset: assets/fonts/GothicA1-Regular.ttf
+        - asset: assets/fonts/GothicA1-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/GothicA1-Black.ttf
+          weight: 900
+    - family: Rye
+      fonts:
+        - asset: assets/fonts/Rye-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

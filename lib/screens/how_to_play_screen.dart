@@ -21,19 +21,19 @@ class HowToPlayScreen extends StatelessWidget {
                   _Intro(),
                   SizedBox(height: 18),
                   _RuleCard(
-                    emoji: '🔄',
+                    icon: Icons.cached,
                     color: CD.gold,
                     title: '장전',
                     body: '총알을 한 발 장전해요. 장전을 해야만 공격(빵야)을 할 수 있어요.',
                   ),
                   _RuleCard(
-                    emoji: '🛡️',
+                    icon: Icons.shield,
                     color: CD.sage,
                     title: '방어',
                     body: '상대가 빵야 할 때 방어하면 맞지 않아요. 단, 방어 중엔 공격할 수 없어요.',
                   ),
                   _RuleCard(
-                    emoji: '💥',
+                    icon: Icons.local_fire_department,
                     color: CD.danger,
                     title: '빵야',
                     body: '장전된 총알로 공격해요! 상대가 방어하지 않았다면 명중 — 승리!',
@@ -71,12 +71,12 @@ class _Intro extends StatelessWidget {
 }
 
 class _RuleCard extends StatelessWidget {
-  final String emoji;
+  final IconData icon;
   final Color color;
   final String title;
   final String body;
   const _RuleCard({
-    required this.emoji,
+    required this.icon,
     required this.color,
     required this.title,
     required this.body,
@@ -103,7 +103,7 @@ class _RuleCard extends StatelessWidget {
               color: color,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(emoji, style: const TextStyle(fontSize: 26)),
+            child: Icon(icon, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -142,12 +142,20 @@ class _StandoffCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text('‼️ 동시에 빵야!',
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-          SizedBox(height: 8),
-          Text(
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.local_fire_department, color: Colors.white, size: 24),
+              SizedBox(width: 8),
+              Text('동시에 빵야!',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
             '둘 다 동시에 빵야 했다면, 먼저 "카우보이!"를 외치는 사람이 이겨요.\n화면에 카우보이 버튼이 뜨면 누구보다 빠르게 탭하세요!',
             style: TextStyle(color: Colors.white, fontSize: 15, height: 1.5),
           ),
@@ -171,9 +179,17 @@ class _Tips extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('🎯 작전 팁',
-              style: TextStyle(
-                  fontWeight: FontWeight.w900, color: CD.leather, fontSize: 16)),
+          Row(
+            children: [
+              const Icon(Icons.lightbulb, color: CD.gold, size: 20),
+              const SizedBox(width: 6),
+              Text('작전 팁',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: CD.leather,
+                      fontSize: 16)),
+            ],
+          ),
           const SizedBox(height: 8),
           ...const [
             '• 총알이 없으면 빵야 버튼은 잠겨요. 먼저 장전!',
