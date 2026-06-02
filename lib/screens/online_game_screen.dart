@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -28,10 +29,21 @@ class OnlineGameScreen extends StatefulWidget {
 class _OnlineGameScreenState extends State<OnlineGameScreen>
     with SingleTickerProviderStateMixin {
   StreamSubscription<DatabaseEvent>? _sub;
+  StreamSubscription<DatabaseEvent>? _offsetSub;
   Map? _data;
   RoomView? _view;
   bool _resetting = false;
+  final _rng = Random();
+
+  // Standoff timing.
+  int _serverOffset = 0; // ms to add to local clock to estimate server time
+  Timer? _goTimer;
+  int _goTimerTurn = -1;
+  int _goWriteTurn = -1;
+
   late final AnimationController _pulse;
+
+  int _serverNow() => DateTime.now().millisecondsSinceEpoch + _serverOffset;
 
   @override
   void initState() {
@@ -39,6 +51,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     _pulse = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 520))
       ..repeat(reverse: true);
+    // Estimate server clock so both phones flash "카우보이!" at the same instant.
+    _offsetSub = FirebaseDatabase.instance
+        .ref('.info/serverTimeOffset')
+        .onValue
+        .listen((e) {
+      final v = e.snapshot.value;
+      if (v is num) _serverOffset = v.toInt();
+    });
     _sub = widget.service.watch(widget.code).listen(_onData);
   }
 
@@ -75,15 +95,47 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           .whenComplete(() => _resetting = false);
     }
 
+    _maybeStartStandoff(view);
+
     setState(() {
       _data = data;
       _view = view;
     });
   }
 
+  /// Host sets the synchronized GO moment once; both clients schedule a rebuild
+  /// exactly at that moment so "카우보이!" flashes together.
+  void _maybeStartStandoff(RoomView view) {
+    if (view.phase != OnlinePhase.standoff) {
+      _goTimerTurn = -1;
+      return;
+    }
+    if (widget.mySlot == Slot.host &&
+        view.standoffGoAt == null &&
+        _goWriteTurn != view.turn) {
+      _goWriteTurn = view.turn;
+      final prep = 1100 + _rng.nextInt(1000); // 1.1~2.1s of suspense
+      widget.service
+          .setStandoffGo(widget.code, view.turn, _serverNow() + prep);
+    }
+    final goAt = view.standoffGoAt;
+    if (goAt != null && _goTimerTurn != view.turn) {
+      _goTimerTurn = view.turn;
+      final delay = goAt - _serverNow();
+      _goTimer?.cancel();
+      if (delay > 0) {
+        _goTimer = Timer(Duration(milliseconds: delay), () {
+          if (mounted) setState(() {});
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _sub?.cancel();
+    _offsetSub?.cancel();
+    _goTimer?.cancel();
     _pulse.dispose();
     widget.service.leave(widget.code, widget.mySlot);
     super.dispose();
@@ -100,7 +152,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (v == null || v.phase != OnlinePhase.standoff || v.iTappedStandoff) {
       return;
     }
-    widget.service.tapStandoff(widget.code, v.turn, widget.mySlot);
+    final goAt = v.standoffGoAt;
+    if (goAt == null) return; // GO not synchronized yet
+    final now = _serverNow();
+    // Reaction measured locally from the GO signal (network-latency-free).
+    // Tapping before GO is a false start (-1) and loses.
+    final rt = now < goAt ? -1 : (now - goAt);
+    widget.service.submitReaction(widget.code, v.turn, widget.mySlot, rt);
   }
 
   void _rematch() {
@@ -416,39 +474,59 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   }
 
   Widget _standoffOverlay(RoomView v) {
+    final goAt = v.standoffGoAt;
+    final go = goAt != null && _serverNow() >= goAt;
+    final reacted = v.iTappedStandoff;
+    final showGo = go && !reacted;
+
+    Widget center;
+    String subtitle;
+    if (reacted) {
+      center = const Text('탭 완료!\n상대 기다리는 중...',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 30, fontWeight: FontWeight.w900));
+      subtitle = '반응속도 비교 중...';
+    } else if (showGo) {
+      center = ScaleTransition(
+        scale: Tween(begin: 0.92, end: 1.14).animate(
+            CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
+        child: const Text('카우보이!\n지금 탭!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 52,
+                fontWeight: FontWeight.w900,
+                height: 1.1)),
+      );
+      subtitle = '먼저 누르는 사람이 승리!';
+    } else {
+      center = const Text('준비...',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 34, fontWeight: FontWeight.w900));
+      subtitle = '"카우보이!"가 뜨면 즉시 탭! (미리 누르면 부정출발 패배)';
+    }
+
     return Positioned.fill(
       child: GestureDetector(
         onTap: _tapStandoff,
         child: Container(
-          color: CD.danger,
+          color: showGo ? CD.danger : CD.leather,
           alignment: Alignment.center,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Emo('bang', size: 80),
+              Emo(showGo ? 'bang' : 'cowboy', size: showGo ? 84 : 64),
+              const SizedBox(height: 18),
+              center,
               const SizedBox(height: 16),
-              if (v.iTappedStandoff)
-                const Text('탭 완료!\n상대 기다리는 중...',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(subtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900))
-              else
-                ScaleTransition(
-                  scale: Tween(begin: 0.92, end: 1.12).animate(
-                      CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
-                  child: const Text('카우보이!\n지금 탭!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 50,
-                          fontWeight: FontWeight.w900,
-                          height: 1.1)),
-                ),
-              const SizedBox(height: 16),
-              const Text('상대보다 빨리 탭하면 승리!',
-                  style: TextStyle(color: Colors.white70, fontSize: 15)),
+                    style: const TextStyle(color: Colors.white70, fontSize: 15)),
+              ),
             ],
           ),
         ),

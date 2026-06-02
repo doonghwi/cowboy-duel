@@ -26,6 +26,11 @@ class RoomView {
   final CowboyAction? myPendingAction;
   final bool iSubmitted;
   final bool iTappedStandoff;
+
+  /// Synchronized GO moment (server-time ms) for the standoff; null until the
+  /// host sets it.
+  final int? standoffGoAt;
+
   final bool? iWon; // non-null only when phase == over
   final String banner;
 
@@ -49,6 +54,7 @@ class RoomView {
     required this.iTappedStandoff,
     required this.iWon,
     required this.banner,
+    this.standoffGoAt,
     this.opponentSubmitted = false,
     this.myScore = 0,
     this.oppScore = 0,
@@ -121,10 +127,17 @@ class OnlineService {
     return room(code).child('turns/t$turn/${slot.key}').set(a.index);
   }
 
-  Future<void> tapStandoff(String code, int turn, Slot slot) {
-    return room(code)
-        .child('turns/t$turn/st_${slot.key}')
-        .set(ServerValue.timestamp);
+  /// Host sets the synchronized GO moment (server-time ms) for the "카우보이!"
+  /// race, so both phones flash GO at the same instant.
+  Future<void> setStandoffGo(String code, int turn, int goAtMs) {
+    return room(code).child('turns/t$turn/goAt').set(goAtMs);
+  }
+
+  /// Submit my reaction time in ms, measured locally from the GO signal so it
+  /// is unaffected by network latency. A negative value = false start (tapped
+  /// before GO) and loses.
+  Future<void> submitReaction(String code, int turn, Slot slot, int ms) {
+    return room(code).child('turns/t$turn/rt_${slot.key}').set(ms);
   }
 
   Future<void> requestRematch(String code, Slot slot) {
@@ -251,16 +264,27 @@ class OnlineService {
             lastGuest, Slot.guest, '명중!', scoreHost, scoreGuest);
       }
       if (r.outcome == DuelOutcome.standoff) {
-        final stHost = turn!['st_host'];
-        final stGuest = turn['st_guest'];
-        if (stHost != null && stGuest != null) {
-          final winner = (_asInt(stHost) ?? 0) <= (_asInt(stGuest) ?? 0)
-              ? Slot.host
-              : Slot.guest;
+        final goAt = _asInt(turn!['goAt']);
+        final rtHost = _asInt(turn['rt_host']);
+        final rtGuest = _asInt(turn['rt_guest']);
+        if (rtHost != null && rtGuest != null) {
+          // Lower reaction wins; a negative value = false start and loses.
+          final hFalse = rtHost < 0;
+          final gFalse = rtGuest < 0;
+          final Slot winner;
+          if (hFalse && gFalse) {
+            winner = Slot.host;
+          } else if (hFalse) {
+            winner = Slot.guest;
+          } else if (gFalse) {
+            winner = Slot.host;
+          } else {
+            winner = rtHost <= rtGuest ? Slot.host : Slot.guest;
+          }
           return _over(opponentJoined, mySlot, ammoHost, ammoGuest, lastHost,
               lastGuest, winner, '카우보이!', scoreHost, scoreGuest);
         }
-        final mineTapped = turn['st_${mySlot.key}'] != null;
+        final mineReacted = turn['rt_${mySlot.key}'] != null;
         return _view(
           opponentJoined: opponentJoined,
           phase: OnlinePhase.standoff,
@@ -272,11 +296,12 @@ class OnlineService {
           lastGuest: lastGuest,
           myPending: null,
           iSubmitted: true,
-          iTapped: mineTapped,
+          iTapped: mineReacted,
           iWon: null,
           scoreHost: scoreHost,
           scoreGuest: scoreGuest,
-          banner: '동시에 빵야! 카우보이!',
+          standoffGoAt: goAt,
+          banner: '동시에 빵야!',
         );
       }
       lastBanner = _ongoingMsg(
@@ -330,6 +355,7 @@ class OnlineService {
     required bool iTapped,
     required bool? iWon,
     required String banner,
+    int? standoffGoAt,
     bool opponentSubmitted = false,
     int scoreHost = 0,
     int scoreGuest = 0,
@@ -346,6 +372,7 @@ class OnlineService {
       myPendingAction: myPending,
       iSubmitted: iSubmitted,
       iTappedStandoff: iTapped,
+      standoffGoAt: standoffGoAt,
       iWon: iWon,
       banner: banner,
       opponentSubmitted: opponentSubmitted,
