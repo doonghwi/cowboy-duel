@@ -107,7 +107,11 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// exactly at that moment so "카우보이!" flashes together.
   void _maybeStartStandoff(RoomView view) {
     if (view.phase != OnlinePhase.standoff) {
+      // Reset per-standoff guards so the NEXT duel (turn numbers restart at 0
+      // after a rematch) writes a fresh GO signal instead of being skipped —
+      // this was the "freeze after several rounds in the same room" bug.
       _goTimerTurn = -1;
+      _goWriteTurn = -1;
       return;
     }
     if (widget.mySlot == Slot.host &&
