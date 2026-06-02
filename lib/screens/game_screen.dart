@@ -138,14 +138,23 @@ class _GameScreenState extends State<GameScreen>
   String _ongoingBanner(TurnResult r) {
     final pDefend = _playerAction == CowboyAction.defend;
     final cDefend = _cpuAction == CowboyAction.defend;
+    final p = _playerAction;
+    final c = _cpuAction;
     if (r.p1Fired && cDefend) return '컴퓨터가 방어로 막았다!';
-    if (r.p2Fired && pDefend) return '방어 성공!';
-    if (_playerAction == CowboyAction.reload &&
-        _cpuAction == CowboyAction.reload) {
+    if (r.p2Fired && pDefend) return '방어 성공! 막아냈다';
+    if (p == CowboyAction.reload && c == CowboyAction.reload) {
       return '둘 다 장전!';
     }
-    if (pDefend && cDefend) return '둘 다 방어!';
-    return '서로 탐색 중!';
+    if (p == CowboyAction.defend && c == CowboyAction.defend) {
+      return '둘 다 방어! 허탕';
+    }
+    if (p == CowboyAction.reload && c == CowboyAction.defend) {
+      return '나는 장전, 컴퓨터는 방어';
+    }
+    if (p == CowboyAction.defend && c == CowboyAction.reload) {
+      return '나는 방어, 컴퓨터는 장전';
+    }
+    return '계속!';
   }
 
   void _startStandoff() {

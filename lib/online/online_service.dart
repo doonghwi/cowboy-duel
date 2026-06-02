@@ -166,14 +166,20 @@ class OnlineService {
     final myFired = iAmHost ? r.p1Fired : r.p2Fired;
     final oppFired = iAmHost ? r.p2Fired : r.p1Fired;
     if (myFired && opp == CowboyAction.defend) return '상대가 막았다!';
-    if (oppFired && my == CowboyAction.defend) return '내가 막았다!';
+    if (oppFired && my == CowboyAction.defend) return '내가 막았다! 방어 성공';
     if (my == CowboyAction.reload && opp == CowboyAction.reload) {
       return '둘 다 장전!';
     }
     if (my == CowboyAction.defend && opp == CowboyAction.defend) {
-      return '둘 다 방어!';
+      return '둘 다 방어! 허탕';
     }
-    return '서로 탐색 중!';
+    if (my == CowboyAction.reload && opp == CowboyAction.defend) {
+      return '나는 장전, 상대는 방어';
+    }
+    if (my == CowboyAction.defend && opp == CowboyAction.reload) {
+      return '나는 방어, 상대는 장전';
+    }
+    return '계속!';
   }
 
   static RoomView computeView(Map data, Slot mySlot) {
